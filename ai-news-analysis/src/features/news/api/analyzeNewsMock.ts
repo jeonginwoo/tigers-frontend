@@ -1,29 +1,20 @@
-import type {
-  AnalyzeNewsRequest,
-  AnalyzeNewsResponse,
-  Sentiment,
-} from "../types";
-import { sampleAnalysis } from "./sampleAnalysis";
-
-const SENTIMENTS: Sentiment[] = ["positive", "neutral", "negative"];
+// src/features/news/api/analyzeNewsMock.ts
+import type { AnalyzeNewsRequest, AnalyzeNewsResponse } from "../types";
 
 export async function analyzeNewsMock(
-  req: AnalyzeNewsRequest,
+  payload: AnalyzeNewsRequest,
 ): Promise<AnalyzeNewsResponse> {
-  if (!req.article.trim()) {
-    throw new Error("empty-article");
-  }
+  console.log("🔥 MOCK analyzeNews 호출:", payload.article);
 
-  // Simulate API latency and slightly randomize sentiment for variety.
-  const sentiment =
-    SENTIMENTS[Math.floor(Math.random() * SENTIMENTS.length)] ??
-    sampleAnalysis.sentiment;
-  const delay = 900 + Math.random() * 600;
-
-  await new Promise((resolve) => setTimeout(resolve, delay));
+  // 실제 백엔드가 없을 때만 임시 사용
+  await new Promise((resolve) => setTimeout(resolve, 500));
 
   return {
-    ...sampleAnalysis,
-    sentiment,
+    sentiment: "neutral",
+    key_points: [
+      "이 응답은 mock 데이터입니다.",
+      "FastAPI /news/analyze 엔드포인트가 준비되면 실제 API로 전환하세요.",
+      "본문 길이: " + payload.article.length + "자",
+    ],
   };
 }

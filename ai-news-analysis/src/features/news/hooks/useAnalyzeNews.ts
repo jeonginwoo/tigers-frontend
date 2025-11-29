@@ -1,60 +1,54 @@
-import { useCallback, useMemo, useState } from "react";
+// src/features/news/hooks/useAnalyzeNews.ts
+"use client";
+
+import { useCallback, useState } from "react";
 import type { AnalyzeNewsResponse } from "../types";
+import { analyzeNewsApi } from "../api/analyzeNewsApi";
 import { analyzeNewsMock } from "../api/analyzeNewsMock";
-import { sampleArticle } from "../api/sampleAnalysis";
 
-interface UseAnalyzeNewsOptions {
-  analyzeNews?: typeof analyzeNewsMock;
-}
+const USE_MOCK = process.env.NEXT_PUBLIC_USE_MOCK === "true";
 
-export function useAnalyzeNews(
-  { analyzeNews = analyzeNewsMock }: UseAnalyzeNewsOptions = {
-    analyzeNews: analyzeNewsMock,
-  },
-) {
-  const [article, setArticle] = useState("");
-  const [result, setResult] = useState<AnalyzeNewsResponse | null>(null);
+export function useAnalyzeNews() {
   const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState<AnalyzeNewsResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const handleAnalyze = useCallback(async () => {
-    if (!article.trim()) {
-      setError("분석할 기사를 입력해 주세요.");
+  const analyze = useCallback(async (article: string) => {
+    const trimmed = article.trim();
+    if (!trimmed) {
+      setError("분석할 기사 내용을 입력해 주세요.");
       return;
     }
 
     setLoading(true);
     setError(null);
+
     try {
-      const response = await analyzeNews({ article });
+      const fn = USE_MOCK ? analyzeNewsMock : analyzeNewsApi;
+      const response = await fn({ article: trimmed });
       setResult(response);
     } catch (err) {
       console.error(err);
-      setError("Mock API 호출 중 문제가 발생했습니다.");
+      setError(
+        err instanceof Error
+          ? err.message
+          : "뉴스 분석 중 문제가 발생했습니다. 잠시 후 다시 시도해 주세요.",
+      );
     } finally {
       setLoading(false);
     }
-  }, [analyzeNews, article]);
-
-  const fillSample = useCallback(() => {
-    setArticle(sampleArticle);
   }, []);
 
-  const status = useMemo(() => {
-    if (loading) return "AI가 기사를 분석하는 중입니다...";
-    if (error) return error;
-    if (result) return "분석이 완료되었습니다.";
-    return "준비 완료";
-  }, [error, loading, result]);
+  const reset = useCallback(() => {
+    setResult(null);
+    setError(null);
+  }, []);
 
   return {
-    article,
-    setArticle,
-    result,
     loading,
+    result,
     error,
-    status,
-    handleAnalyze,
-    fillSample,
+    analyze,
+    reset,
   };
 }
