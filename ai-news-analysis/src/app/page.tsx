@@ -8,11 +8,13 @@ export default function Home() {
         <section className="rounded-3xl border bg-card p-6 shadow-sm">
           <div className="flex items-center gap-4">
             <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-secondary/20 text-primary">
-              <span className="text-2xl">🤖</span>
+              <span className="text-2xl" role="img" aria-label="news">
+                📰
+              </span>
             </div>
             <div>
               <p className="text-sm font-medium text-muted-foreground">
-                금융 기사를 AI로 분석하고 핵심 인사이트를 추출합니다
+                금융 기사를 AI로 분석하고 핵심 인사이트를 추출합니다.
               </p>
               <h1 className="text-2xl font-semibold text-foreground">
                 AI 뉴스 분석
@@ -23,6 +25,7 @@ export default function Home() {
             </div>
           </div>
         </section>
+
         <div className="grid gap-6 lg:grid-cols-[2fr_1fr]">
           <NewsAnalyzer />
           <AccountPanel />

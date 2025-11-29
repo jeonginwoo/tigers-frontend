@@ -3,6 +3,19 @@
 import { useState } from "react";
 import type { AnalyzeNewsResponse, Sentiment } from "../types";
 
+type ResultPayload =
+  | AnalyzeNewsResponse
+  | {
+      parsed_text?: string;
+      summary?: string;
+      answer?: string;
+      analysis?: {
+        sentiment?: Sentiment;
+        key_actors?: string[];
+        key_issues?: string[];
+      };
+    };
+
 function getSentimentLabel(sentiment?: Sentiment) {
   switch (sentiment) {
     case "positive":
@@ -23,20 +36,31 @@ const SENTIMENT_CLASS: Record<Sentiment | "neutral", string> = {
 };
 
 interface ResultPanelProps {
-  result: AnalyzeNewsResponse | null;
+  result: ResultPayload | null;
 }
 
 export function ResultPanel({ result }: ResultPanelProps) {
   const [copied, setCopied] = useState(false);
-  const sentiment = result?.sentiment ?? "neutral";
-  const keyPoints = result?.key_points ?? [];
+  const sentiment =
+    (result as AnalyzeNewsResponse)?.sentiment ??
+    (result as any)?.analysis?.sentiment ??
+    "neutral";
+
+  const keyPoints =
+    (result as AnalyzeNewsResponse)?.key_points ??
+    (result as any)?.analysis?.key_issues ??
+    [];
 
   const handleCopy = async () => {
     if (!result) return;
     try {
-      await navigator.clipboard.writeText(
-        [result.sentiment, ...result.key_points].join("\n"),
-      );
+      const summaryText = [
+        typeof sentiment === "string" ? `Sentiment: ${sentiment}` : "",
+        ...(Array.isArray(keyPoints) ? keyPoints : []),
+      ]
+        .filter(Boolean)
+        .join("\n");
+      await navigator.clipboard.writeText(summaryText);
       setCopied(true);
       setTimeout(() => setCopied(false), 1500);
     } catch (err) {
